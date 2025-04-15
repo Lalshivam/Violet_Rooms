@@ -52,7 +52,7 @@ Follow these steps to set up the application locally:
 4. **Start the Frontend**:
    Navigate to the `frontend` directory and start the React application:
    ```bash
-   npm start
+   npm run dev
    ```
 
 5. **Access the Application**:
