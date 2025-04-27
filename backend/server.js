@@ -22,7 +22,7 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: process.env.FRONTEND_URL,
+        origin: "http://localhost:5173",
         methods: ['GET', 'POST'],
     }
 });
@@ -34,7 +34,7 @@ const activeRooms = new Map();
 // Handle socket connection
 handleSocketEvents(io, activeRooms);
 
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === "production") {
     // Serve static files from the React app
     app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
@@ -44,13 +44,9 @@ if (process.env.NODE_ENV === 'production') {
         res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
     });
 
-} else {
-    app.get('/', (req, res) => {
-        res.send('API is running...');
-    });
-}
+} 
 
-const PORT = process.env.PORT;
+const PORT = 5000;
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
