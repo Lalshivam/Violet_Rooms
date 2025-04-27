@@ -1,0 +1,13 @@
+{
+  "name": "voiletroom",
+  "version": "1.0.0",
+  "description": "VioletRoom is a real-time, secure chatting application that allows users to join chat rooms and communicate seamlessly. Built with React for the frontend and Socket.IO for real-time communication, VioletRoom ensures a smooth and interactive chatting experience.",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
+    "start" : "npm run start --prefix backend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

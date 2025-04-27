@@ -7,66 +7,50 @@ import { Server } from 'socket.io';
 //cors to allow cross-origin requests from the client to the server
 import cors from 'cors';
 
+import path from 'path';
+const __dirname = path.resolve(); // Get the current directory name
+
+import dotenv from 'dotenv';
+dotenv.config(); // Load environment variables from .env file
+
+//importing the socket event handlers from another file
+import { handleSocketEvents } from './socketHandlers.js';
+
 // Initialize Express app and server
 const app = express();
 app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: 'http://localhost:5173',
+        origin: process.env.FRONTEND_URL,
         methods: ['GET', 'POST'],
     }
 });
+
 
 // Store active rooms and their user
 const activeRooms = new Map(); 
 
 // Handle socket connection
-io.on("connection", (socket) => {
-    console.log('A user connected:', socket.id);
+handleSocketEvents(io, activeRooms);
 
-    // Join a room based on codeword
-    socket.on('join_room', (roomHash) => {
-        socket.join(roomHash);
+if (process.env.NODE_ENV === 'production') {
+    // Serve static files from the React app
+    app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-        //update room user cnt
-        if(!activeRooms.has(roomHash)){
-            activeRooms.set(roomHash,new Set());
-        }
-        activeRooms.get(roomHash).add(socket.id);
-
-        //Broadcast updated user cnt to everyone in the room 
-        const usercnt = activeRooms.get(roomHash).size;
-        io.to(roomHash).emit('user_cnt_update',usercnt);
-
-        console.log(`User ${socket.id} joined ${roomHash}. Users in room : ${usercnt}`);
+    // The "catchall" handler: for any request that doesn't
+    // match one above, send back React's index.html file.
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
     });
 
-    // Handle sending message
-    socket.on("send_message", (data) => {
-        console.log('Message:', data);
-        io.to(data.room).emit('receive_message', data);
+} else {
+    app.get('/', (req, res) => {
+        res.send('API is running...');
     });
+}
 
-    // Handle disconnection
-    socket.on("disconnect", () => {
-        activeRooms.forEach((users,roomHash) =>{
-            if(users.has(socket.id)){
-                users.delete(socket.id);
-                const usercnt = users.size;
-                io.to(roomHash).emit('user_cnt_update',usercnt);
-
-                //clean up empty rooms
-                if(users.size === 0){
-                    activeRooms.delete(roomHash);
-                }
-            }
-        });
-        console.log('User Disconnected:', socket.id);
-    });
-});
-
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
