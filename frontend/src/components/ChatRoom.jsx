@@ -3,7 +3,7 @@ import React, { useRef ,useState, useEffect } from "react";
 import { io } from "socket.io-client";
 
 // Initialize socket connection
-const socket = io.connect("http://localhost:5000");
+const socket = io.connect(process.env.NODE_ENV === "production" ? window.location.origin : "http://localhost:5000");
 
 function ChatRoom({ room }) {
     // State for chat messages, input message, and user count
